@@ -19,7 +19,7 @@
 int window = LEFT_WINDOW;
 
 int frame = -1;
-int pattern = 0;
+struct pattern pattern;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS * NUM_ROWS * NUM_COLUMNS, PIN, NEO_GRB + NEO_KHZ800);
 
@@ -45,12 +45,15 @@ void setup() {
 
 bool shouldFade(uint8_t row, uint8_t column) {
   uint8_t offset = window == LEFT_WINDOW ? 4 : 0;
+  // Serial.println((uint16_t)&pattern, HEX);
+  // delay(100);
+
   if ((window == LEFT_WINDOW && row != 1) || (window == RIGHT_WINDOW && row == 1)) {
     // right to left
-    return bitAtK(words[frame * NUM_ROWS + (2 - row)], column + offset);
+    return bitAtK(pattern.frames[frame * NUM_ROWS + (2 - row)], column + offset);
   } else {
     // left to right
-    return bitAtK(words[frame * NUM_ROWS+ (2 - row)], (3 - column) + offset);
+    return bitAtK(pattern.frames[frame * NUM_ROWS+ (2 - row)], (3 - column) + offset);
   }
   return true;
 }
@@ -74,7 +77,7 @@ void fade(uint8_t frame) {
 
     pixels.show();
 
-    delay(10);
+    delay(pattern.fade_delay);
   }
 
   while (value > 0) {
@@ -93,18 +96,19 @@ void fade(uint8_t frame) {
 
     pixels.show();
 
-    delay(10);
+    delay(pattern.fade_delay);
   }
 }
 
 void loop() {
   // select a random pattern
-  pattern = 0;
+  pattern = nextPattern();
 
   // fade in each frame of the pattern
-  for (frame = 0; frame < word_frame_count; frame++) {
+  for (frame = 0; frame < pattern.length; frame++) {
     Serial.println(frame);
     fade(frame);
+    delay(pattern.frame_delay);
   }
 
   delay(random(1000,5000));
