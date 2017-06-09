@@ -5,7 +5,7 @@
 #include "patterns/scroll_test.h"
 
 struct pattern nextPattern() {
-  int r = random(0,2);
+  int r = random(0,3);
 
   switch(r) {
     case 0:

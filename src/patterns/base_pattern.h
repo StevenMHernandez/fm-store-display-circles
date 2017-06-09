@@ -9,6 +9,7 @@ struct pattern
   uint8_t *frames;
   uint8_t fade_delay;
   uint8_t frame_delay;
+  bool fade_out = true;
 };
 
 #endif

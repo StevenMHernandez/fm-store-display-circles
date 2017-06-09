@@ -32,6 +32,8 @@ int direction[12];
 void setup() {
   Serial.begin(9600);
 
+  randomSeed(analogRead(0));
+
   pinMode(PIR_SENSOR, INPUT);
 
   for (int i=0; i < NUM_ROWS * NUM_COLUMNS; i++) {
@@ -71,6 +73,10 @@ void fade(uint8_t frame) {
           for(int k = 0; k < NUM_PIXELS; k++){
             pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(value, value, value));
           }
+        } else {
+          for(int k = 0; k < NUM_PIXELS; k++){
+            pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(0, 0, 0));
+          }
         }
       }
     }
@@ -80,23 +86,25 @@ void fade(uint8_t frame) {
     delay(pattern.fade_delay);
   }
 
-  while (value > 0) {
-    value--;
+  if (pattern.fade_out) {
+    while (value > 0) {
+      value--;
 
-    for(int i = 0; i < NUM_ROWS; i++) {
-      for(int j = 0; j < NUM_COLUMNS; j++) {
-        // Should this circle fade out?
-        if (shouldFade(i, j)) {
-          for(int k = 0; k < NUM_PIXELS; k++) {
-            pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(value, value, value));
+      for(int i = 0; i < NUM_ROWS; i++) {
+        for(int j = 0; j < NUM_COLUMNS; j++) {
+          // Should this circle fade out?
+          if (shouldFade(i, j)) {
+            for(int k = 0; k < NUM_PIXELS; k++) {
+              pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(value, value, value));
+            }
           }
         }
       }
+
+      pixels.show();
+
+      delay(pattern.fade_delay);
     }
-
-    pixels.show();
-
-    delay(pattern.fade_delay);
   }
 }
 
