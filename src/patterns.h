@@ -4,8 +4,7 @@
 #include "patterns/type_out_words.h"
 #include "patterns/scroll_test.h"
 
-struct pattern nextPattern() {
-  int r = random(0,3);
+struct pattern nextPattern(int r) {
 
   switch(r) {
     case 0:
@@ -15,4 +14,8 @@ struct pattern nextPattern() {
     case 2:
       return scroll_test();
   }
+}
+
+int getRandomPatternIndex() {
+    return random(0,3);
 }

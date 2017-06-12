@@ -1,13 +1,17 @@
+#include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
+#include <IRremote.h>
+
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
-#include "Arduino.h"
+
 #include "binary_helpers.h"
 #include "patterns.h"
 
+
 #define PIN            6
-#define PIR_SENSOR     3
+#define IR_INPUT       9
 
 #define NUM_PIXELS     1
 #define NUM_ROWS       3
@@ -16,12 +20,16 @@
 #define LEFT_WINDOW    0
 #define RIGHT_WINDOW   1
 
-int window = LEFT_WINDOW;
+int window = RIGHT_WINDOW;
 
 int frame = -1;
 struct pattern pattern;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS * NUM_ROWS * NUM_COLUMNS, PIN, NEO_GRB + NEO_KHZ800);
+
+IRrecv irrecv(IR_INPUT);
+IRsend irsend;
+decode_results results;
 
 int delayval = 100;
 
@@ -34,21 +42,19 @@ void setup() {
 
   randomSeed(analogRead(0));
 
-  pinMode(PIR_SENSOR, INPUT);
-
   for (int i=0; i < NUM_ROWS * NUM_COLUMNS; i++) {
     color[i] = random(1,3);
     value[i] = random(0,100);
     direction[i] = random(0,1);
   }
 
+  irrecv.enableIRIn();
+
   pixels.begin();
 }
 
 bool shouldFade(uint8_t row, uint8_t column) {
   uint8_t offset = window == LEFT_WINDOW ? 4 : 0;
-  // Serial.println((uint16_t)&pattern, HEX);
-  // delay(100);
 
   if ((window == LEFT_WINDOW && row != 1) || (window == RIGHT_WINDOW && row == 1)) {
     // right to left
@@ -109,8 +115,22 @@ void fade(uint8_t frame) {
 }
 
 void loop() {
-  // select a random pattern
-  pattern = nextPattern();
+  if (window == LEFT_WINDOW) {
+    // left_windo selects a random pattern
+    int r = getRandomPatternIndex();
+    pattern = nextPattern(r);
+
+    irsend.sendSony(r, 12);
+  } else {
+    // wait to receive nextPattern from left_window
+    while (!irrecv.decode(&results)) {
+      // wait
+    }
+
+    pattern = nextPattern(results.value);
+
+    irrecv.resume();
+  }
 
   // fade in each frame of the pattern
   for (frame = 0; frame < pattern.length; frame++) {
@@ -119,5 +139,14 @@ void loop() {
     delay(pattern.frame_delay);
   }
 
-  delay(random(1000,5000));
+  if (window == LEFT_WINDOW) {
+    // master
+    delay(1000);
+  }
+
+  if (window == LEFT_WINDOW) {
+    // left_window waits a random amount of time
+    // right_window waits for left_window to say go
+    delay(random(1000,5000));
+  }
 }
