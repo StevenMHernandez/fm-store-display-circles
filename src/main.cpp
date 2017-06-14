@@ -17,12 +17,12 @@
 #define NUM_ROWS       3
 #define NUM_COLUMNS    4
 
-#define MAX_BRIGHT    40
+#define MAX_BRIGHT   255
 
 #define LEFT_WINDOW    0
 #define RIGHT_WINDOW   1
 
-int window = LEFT_WINDOW;
+int window = RIGHT_WINDOW;
 
 int frame = -1;
 struct pattern pattern;

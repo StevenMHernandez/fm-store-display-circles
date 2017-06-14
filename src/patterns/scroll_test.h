@@ -55,7 +55,7 @@ struct pattern scroll_test() {
 
   p.length = 12;
   p.frames = frames_st;
-  p.fade_delay = 5;
+  p.fade_delay = 1;
   p.frame_delay = 0;
 
   return p;

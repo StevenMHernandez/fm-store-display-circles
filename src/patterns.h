@@ -5,7 +5,6 @@
 #include "patterns/scroll_test.h"
 
 struct pattern nextPattern(int r) {
-
   switch(r) {
     case 0:
       return lets_make_something_awesome_pattern();
