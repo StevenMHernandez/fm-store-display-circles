@@ -13,14 +13,16 @@
 #define PIN            6
 #define IR_INPUT       9
 
-#define NUM_PIXELS     1
+#define NUM_PIXELS     10
 #define NUM_ROWS       3
 #define NUM_COLUMNS    4
+
+#define MAX_BRIGHT    40
 
 #define LEFT_WINDOW    0
 #define RIGHT_WINDOW   1
 
-int window = RIGHT_WINDOW;
+int window = LEFT_WINDOW;
 
 int frame = -1;
 struct pattern pattern;
@@ -53,15 +55,15 @@ void setup() {
   pixels.begin();
 }
 
-bool shouldFade(uint8_t row, uint8_t column) {
+bool shouldFade(uint8_t f, uint8_t row, uint8_t column) {
   uint8_t offset = window == LEFT_WINDOW ? 4 : 0;
 
   if ((window == LEFT_WINDOW && row != 1) || (window == RIGHT_WINDOW && row == 1)) {
     // right to left
-    return bitAtK(pattern.frames[frame * NUM_ROWS + (2 - row)], column + offset);
+    return bitAtK(pattern.frames[f * NUM_ROWS + (2 - row)], column + offset);
   } else {
     // left to right
-    return bitAtK(pattern.frames[frame * NUM_ROWS+ (2 - row)], (3 - column) + offset);
+    return bitAtK(pattern.frames[f * NUM_ROWS+ (2 - row)], (3 - column) + offset);
   }
   return true;
 }
@@ -69,15 +71,19 @@ bool shouldFade(uint8_t row, uint8_t column) {
 void fade(uint8_t frame) {
   int value = 0;
 
-  while (value < 40) {
+  while (value < MAX_BRIGHT) {
     value++;
 
-    for(int i = 0; i < NUM_ROWS; i++){
-      for(int j = 0; j < NUM_COLUMNS; j++){
+    for(int i = 0; i < NUM_ROWS; i++) {
+      for(int j = 0; j < NUM_COLUMNS; j++) {
         // Should this circle light up?
-        if (shouldFade(i, j)) {
-          for(int k = 0; k < NUM_PIXELS; k++){
-            pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(value, value, value));
+        if (shouldFade(frame, i, j)) {
+          for(int k = 0; k < NUM_PIXELS; k++) {
+            if (frame == 0 || !shouldFade(frame - 1, i, j)) {
+              pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(value, value, value));
+            } else {
+              pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(MAX_BRIGHT, MAX_BRIGHT, MAX_BRIGHT));
+            }
           }
         } else {
           for(int k = 0; k < NUM_PIXELS; k++){
@@ -92,25 +98,28 @@ void fade(uint8_t frame) {
     delay(pattern.fade_delay);
   }
 
-  if (pattern.fade_out) {
-    while (value > 0) {
-      value--;
+  while (value > 0) {
+    value--;
 
-      for(int i = 0; i < NUM_ROWS; i++) {
-        for(int j = 0; j < NUM_COLUMNS; j++) {
-          // Should this circle fade out?
-          if (shouldFade(i, j)) {
-            for(int k = 0; k < NUM_PIXELS; k++) {
+    for(int i = 0; i < NUM_ROWS; i++) {
+      for(int j = 0; j < NUM_COLUMNS; j++) {
+        // Should this circle fade out?
+        if (shouldFade(frame, i, j)) {
+          for(int k = 0; k < NUM_PIXELS; k++) {
+            // fade out if specified,
+            // or if it is the last frame in the sequence
+            // or if the next frame should be faded
+            if (pattern.length - 1 == frame || !shouldFade(frame + 1, i, j)) {
               pixels.setPixelColor(((i * NUM_COLUMNS) + j) * NUM_PIXELS + k, pixels.Color(value, value, value));
             }
           }
         }
       }
-
-      pixels.show();
-
-      delay(pattern.fade_delay);
     }
+
+    pixels.show();
+
+    delay(pattern.fade_delay);
   }
 }
 
@@ -126,6 +135,8 @@ void loop() {
     while (!irrecv.decode(&results)) {
       // wait
     }
+
+    Serial.println(results.value);
 
     pattern = nextPattern(results.value);
 
