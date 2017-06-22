@@ -107,8 +107,8 @@ struct pattern type_out_words() {
 
   p.length = 24;
   p.frames = frames_tow;
-  p.fade_delay = 1;
-  p.frame_delay = 25;
+  p.fade_delay = 0;
+  p.frame_delay = 0;
 
   return p;
 }

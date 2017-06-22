@@ -22,7 +22,7 @@
 #define LEFT_WINDOW    0
 #define RIGHT_WINDOW   1
 
-int window = RIGHT_WINDOW;
+int window = LEFT_WINDOW;
 
 int frame = -1;
 struct pattern pattern;
@@ -72,7 +72,11 @@ void fade(uint8_t frame) {
   int value = 0;
 
   while (value < MAX_BRIGHT) {
-    value++;
+    value += 2;
+
+    if (value > MAX_BRIGHT) {
+      value = MAX_BRIGHT;
+    }
 
     for(int i = 0; i < NUM_ROWS; i++) {
       for(int j = 0; j < NUM_COLUMNS; j++) {
@@ -95,11 +99,17 @@ void fade(uint8_t frame) {
 
     pixels.show();
 
-    delay(pattern.fade_delay);
+    // if (value % 16 == 0) {
+      delay(pattern.fade_delay);
+    // }
   }
 
   while (value > 0) {
-    value--;
+    value -= 2;
+
+    if (value < 0) {
+      value = 0;
+    }
 
     for(int i = 0; i < NUM_ROWS; i++) {
       for(int j = 0; j < NUM_COLUMNS; j++) {
@@ -119,7 +129,9 @@ void fade(uint8_t frame) {
 
     pixels.show();
 
-    delay(pattern.fade_delay);
+    // if (value % 16 == 0) {
+      delay(pattern.fade_delay);
+    // }
   }
 }
 
@@ -158,6 +170,6 @@ void loop() {
   if (window == LEFT_WINDOW) {
     // left_window waits a random amount of time
     // right_window waits for left_window to say go
-    delay(random(1000,5000));
+    delay(random(100,500));
   }
 }

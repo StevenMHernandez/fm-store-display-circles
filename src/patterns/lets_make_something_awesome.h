@@ -24,7 +24,7 @@ struct pattern lets_make_something_awesome_pattern() {
   p.length = 4;
   p.frames = frames_lmsa;
   p.fade_delay = 2;
-  p.frame_delay = 25;
+  p.frame_delay = 10;
 
   return p;
 }
