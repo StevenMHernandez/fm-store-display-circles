@@ -33,22 +33,10 @@ IRrecv irrecv(IR_INPUT);
 IRsend irsend;
 decode_results results;
 
-int delayval = 100;
-
-int color[12];
-int value[12];
-int direction[12];
-
 void setup() {
   Serial.begin(9600);
 
   randomSeed(analogRead(0));
-
-  for (int i=0; i < NUM_ROWS * NUM_COLUMNS; i++) {
-    color[i] = random(1,3);
-    value[i] = random(0,100);
-    direction[i] = random(0,1);
-  }
 
   irrecv.enableIRIn();
 
@@ -63,9 +51,8 @@ bool shouldFade(uint8_t f, uint8_t row, uint8_t column) {
     return bitAtK(pattern.frames[f * NUM_ROWS + (2 - row)], column + offset);
   } else {
     // left to right
-    return bitAtK(pattern.frames[f * NUM_ROWS+ (2 - row)], (3 - column) + offset);
+    return bitAtK(pattern.frames[f * NUM_ROWS + (2 - row)], (3 - column) + offset);
   }
-  return true;
 }
 
 void fade(uint8_t frame) {
@@ -100,7 +87,7 @@ void fade(uint8_t frame) {
     pixels.show();
 
     // if (value % 16 == 0) {
-      delay(pattern.fade_delay);
+    delay(pattern.fade_delay);
     // }
   }
 
@@ -130,7 +117,7 @@ void fade(uint8_t frame) {
     pixels.show();
 
     // if (value % 16 == 0) {
-      delay(pattern.fade_delay);
+    delay(pattern.fade_delay);
     // }
   }
 }
